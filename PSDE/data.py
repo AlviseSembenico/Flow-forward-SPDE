@@ -43,9 +43,25 @@ def generate(
     return yt
 
 
+def generate_prices(
+    t: float,
+    # delivery: float,
+    partition: np.ndarray,
+    seed: int = 42,
+    noise_dim: int = 7,
+    size: int = 1000,
+    N: int = 100,  # time discretization steps
+    strike: int = 1,
+):
+    yt = generate(t, partition, seed, noise_dim, size, N)
+    val = yt.sum(axis=1) * (12 / 365)
+    val = np.maximum(val - strike, 0)
+
+    return val
+
+
 if __name__ == "__main__":
     t = 1 / 12
     partition = np.linspace(0, 1, 100)
-    yt = generate(t, partition)
-    plt.plot(yt[0])
-    plt.show()
+    yt = generate_prices(t, partition)
+    ic(yt.shape)
