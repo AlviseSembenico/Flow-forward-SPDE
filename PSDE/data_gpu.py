@@ -70,7 +70,7 @@ def generate_prices(
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
 
-    return val
+    return yt, val
 
 
 def generate_MC(
@@ -139,7 +139,7 @@ def generate_prices_MC(
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
 
-    return val
+    return yt, val
 
 
 @click.command()
@@ -153,17 +153,19 @@ def generate_full_dataset(
     t: float, noise_dim: int, size_train: int, size_test: int, n: int, strike: int
 ):
     partition = np.linspace(0, 1, n)
-    train = generate_prices(
+    train_x, train_y = generate_prices(
         t, partition, noise_dim=noise_dim, size=size_train, N=n, strike=strike
     )
-    test = generate_prices_MC(
+    test_x, test_y = generate_prices_MC(
         t, partition, noise_dim=noise_dim, size=size_test, N=n, strike=strike
     )
 
     # save the data to the data folder
     Path("data").mkdir(exist_ok=True)
-    torch.save(train, "data/train.pt")
-    torch.save(test, "data/test.pt")
+    torch.save(train_x, "data/train_x.pt")
+    torch.save(train_y, "data/train_y.pt")
+    torch.save(test_x, "data/test_x.pt")
+    torch.save(test_y, "data/test_y.pt")
 
 
 if __name__ == "__main__":
