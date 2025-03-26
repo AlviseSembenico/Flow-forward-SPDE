@@ -55,22 +55,22 @@ def e_5(ξ: float):
 
 
 def e_5_torch(ξ: torch.Tensor) -> torch.Tensor:
-    num = ξ**3 - 36 * ξ * 2 - 6 * ξ
+    num = ξ**3 - 36 * ξ**2 - 6 * ξ
     den = 42 * torch.sqrt(torch.tensor(5.0))
-    return num / den * torch.exp(-ξ)
+    return (num / den) * torch.exp(-ξ)
 
 
 @np.vectorize
 def e_6(ξ: float):
     num = ξ**4 - 1440 * ξ**3 - 192 * ξ**2 + 24 * ξ
     den = 24 * np.sqrt(806115)
-    return num / den * np.exp(-ξ)
+    return (num / den) * np.exp(-ξ)
 
 
 def e_6_torch(ξ: torch.Tensor) -> torch.Tensor:
-    num = ξ**4 - 1440 * ξ**3 - 192 * ξ**2 + 24 * ξ
+    num = ξ**4 - 1440 * ξ**3 - 192 * ξ**2 - 24 * ξ
     den = 24 * torch.sqrt(torch.tensor(806115.0))
-    return num / den * torch.exp(-ξ)
+    return (num / den) * torch.exp(-ξ)
 
 
 @np.vectorize
@@ -83,7 +83,7 @@ def e_7(ξ: float):
 def e_7_torch(ξ: torch.Tensor) -> torch.Tensor:
     num = ξ**5 - 100800 * ξ**4 - 10800 * ξ**3 - 1200 * ξ**2 - 120 * ξ
     den = 1560 * torch.sqrt(torch.tensor(49407661.0))
-    return num / den * torch.exp(-ξ)
+    return (num / den) * torch.exp(-ξ)
 
 
 e_basis = [e_1, e_2, e_3, e_4, e_5, e_6, e_7]
