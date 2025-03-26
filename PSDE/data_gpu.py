@@ -8,6 +8,7 @@ from basis import span
 from icecream import ic
 
 device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.manual_seed(42)
 
 
 def generate(
@@ -112,7 +113,7 @@ def generate_MC(
         values = p**2 * dt
         lebesgue += values
 
-        increment = (p * dW[:, :, i, :].T).sum(dim=1)
+        increment = (p * dW[:, :, i, :].permute(2, 1, 0)).sum(dim=1)
         ito += increment.T
 
     # Broadcast the sum now
