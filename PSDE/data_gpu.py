@@ -4,7 +4,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from basis import span
+from basis import span_torch
 from icecream import ic
 
 device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,12 +26,10 @@ def generate(
     x0 = torch.empty(size, 7, device=device).uniform_(-1 / 2, 1 / 2)
 
     # Convert partition to tensor and move to device
-    partition_tensor = torch.tensor(partition, dtype=torch.float32, device=device)
+    partition = torch.tensor(partition, dtype=torch.float32, device=device)
 
     # Add the first value from x0
-    space = torch.tensor(
-        span(partition.astype(float) + t), dtype=torch.float32, device=device
-    )
+    space = span_torch(partition + t)
     xt = torch.matmul(x0, space)
 
     dt = t / N
@@ -44,7 +42,7 @@ def generate(
 
     for i in range(N):
         s = dt * i
-        p = partition_tensor + (t - s)
+        p = span_torch(partition + (t - s))
         values = p**2 * dt
 
         lebesgue += values
@@ -93,9 +91,7 @@ def generate_MC(
     partition_tensor = torch.tensor(partition, dtype=torch.float32, device=device)
 
     # Add the first value from x0
-    space = torch.tensor(
-        span(partition.astype(float) + t), dtype=torch.float32, device=device
-    )
+    space = span_torch(partition + t)
     xt = torch.matmul(x0, space)  # shape: (size, partition.shape[0])
 
     dt = t / N
@@ -109,7 +105,7 @@ def generate_MC(
 
     for i in range(N):
         s = dt * i
-        p = partition_tensor + (t - s)
+        p = span_torch(partition + (t - s))
         values = p**2 * dt
         lebesgue += values
 
