@@ -13,7 +13,7 @@ torch.manual_seed(42)
 
 def generate(
     t: float,
-    partition: np.ndarray,
+    partition: torch.Tensor,
     seed: int = 42,
     noise_dim: int = 7,
     size: int = 1000,
@@ -24,9 +24,6 @@ def generate(
     torch.manual_seed(seed)
     # initial value
     x0 = torch.empty(size, 7, device=device).uniform_(-1 / 2, 1 / 2)
-
-    # Convert partition to tensor and move to device
-    partition = torch.tensor(partition, dtype=torch.float32, device=device)
 
     # Add the first value from x0
     space = span_torch(partition + t)
@@ -43,7 +40,7 @@ def generate(
     for i in range(N):
         s = dt * i
         p = span_torch(partition + (t - s))
-        values = p**2 * dt
+        values = (p**2).sum(dim=0) * dt
 
         lebesgue += values
         ito += torch.sum(p * dW[:, :, i].T, dim=0)  # shape: (N,)
@@ -73,7 +70,7 @@ def generate_prices(
 
 def generate_MC(
     t: float,
-    partition: np.ndarray,
+    partition: torch.Tensor,
     seed: int = 42,
     noise_dim: int = 7,
     size: int = 1000,
@@ -86,9 +83,6 @@ def generate_MC(
 
     # initial value
     x0 = torch.empty(size, 7, device=device).uniform_(-1 / 2, 1 / 2)
-
-    # Convert partition to tensor and move to device
-    partition_tensor = torch.tensor(partition, dtype=torch.float32, device=device)
 
     # Add the first value from x0
     space = span_torch(partition + t)
@@ -106,7 +100,7 @@ def generate_MC(
     for i in range(N):
         s = dt * i
         p = span_torch(partition + (t - s))
-        values = p**2 * dt
+        values = (p**2).sum(dim=0) * dt
         lebesgue += values
 
         increment = (p * dW[:, :, i, :].permute(2, 1, 0)).sum(dim=1)
@@ -148,7 +142,7 @@ def generate_prices_MC(
 def generate_full_dataset(
     t: float, noise_dim: int, size_train: int, size_test: int, n: int, strike: int
 ):
-    partition = np.linspace(0, 1, n)
+    partition = torch.linspace(0, 1, n)
     train_x, train_y = generate_prices(
         t, partition, noise_dim=noise_dim, size=size_train, N=n, strike=strike
     )
