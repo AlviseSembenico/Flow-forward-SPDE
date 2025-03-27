@@ -9,21 +9,26 @@ from icecream import ic
 
 device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(42)
+torch.set_default_dtype(torch.float64)
 
 
 def generate(
     t: float,
     partition: torch.Tensor,
+    x0: torch.Tensor = None,
     seed: int = 42,
     noise_dim: int = 7,
     size: int = 1000,
-    N: int = 100,  # time discretization steps
 ) -> torch.Tensor:
 
     assert noise_dim <= 7
+    N = partition.shape[0]
     torch.manual_seed(seed)
     # initial value
-    x0 = torch.empty(size, 7, device=device).uniform_(-1 / 2, 1 / 2)
+    if x0 is None:
+        x0 = torch.empty(size, 7, device=device, dtype=torch.float64).uniform_(
+            -1 / 2, 1 / 2
+        )
 
     # Add the first value from x0
     space = span_torch(partition + t)
@@ -41,7 +46,6 @@ def generate(
         s = dt * i
         p = span_torch(partition + (t - s))
         values = (p**2).sum(dim=0) * dt
-
         lebesgue += values
         ito += torch.sum(p * dW[:, :, i].T, dim=0)  # shape: (N,)
 
@@ -58,10 +62,9 @@ def generate_prices(
     seed: int = 42,
     noise_dim: int = 7,
     size: int = 1000,
-    N: int = 100,  # time discretization steps
     strike: int = 1,
 ):
-    yt = generate(t, partition, seed, noise_dim, size, N)
+    yt = generate(t, partition, seed=seed, noise_dim=noise_dim, size=size)
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
 
@@ -71,18 +74,20 @@ def generate_prices(
 def generate_MC(
     t: float,
     partition: torch.Tensor,
+    x0: torch.Tensor = None,
     seed: int = 42,
     noise_dim: int = 7,
     size: int = 1000,
-    N: int = 100,  # time discretization steps
     M: int = 50,
 ):
 
     assert noise_dim <= 7
+    N = partition.shape[0]
     torch.manual_seed(seed)
 
     # initial value
-    x0 = torch.empty(size, 7, device=device).uniform_(-1 / 2, 1 / 2)
+    if x0 is None:
+        x0 = torch.empty(size, 7, device=device).uniform_(-1 / 2, 1 / 2)
 
     # Add the first value from x0
     space = span_torch(partition + t)
@@ -120,12 +125,10 @@ def generate_prices_MC(
     seed: int = 42,
     noise_dim: int = 7,
     size: int = 1000,
-    N: int = 100,  # time discretization steps
     strike: int = 1,
     M: int = 1,
 ):
-
-    yt = generate_MC(t, partition, seed, noise_dim, size, N, M)
+    yt = generate_MC(t, partition, seed=seed, noise_dim=noise_dim, size=size, M=M)
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
 
@@ -142,12 +145,12 @@ def generate_prices_MC(
 def generate_full_dataset(
     t: float, noise_dim: int, size_train: int, size_test: int, n: int, strike: int
 ):
-    partition = torch.linspace(0, 1, n)
+    partition = torch.linspace(0, t, n)
     train_x, train_y = generate_prices(
-        t, partition, noise_dim=noise_dim, size=size_train, N=n, strike=strike
+        t, partition, noise_dim=noise_dim, size=size_train, strike=strike
     )
     test_x, test_y = generate_prices_MC(
-        t, partition, noise_dim=noise_dim, size=size_test, N=n, strike=strike
+        t, partition, noise_dim=noise_dim, size=size_test, strike=strike
     )
 
     # save the data to the data folder
