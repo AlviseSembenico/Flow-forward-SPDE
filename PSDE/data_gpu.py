@@ -197,24 +197,27 @@ def generate_full_dataset(
     if not test_only:
         for i in tqdm(range(0, size_train, 10 * batch_size)):
             x, y = generate_prices(
-                t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
+                t,
+                partition,
+                noise_dim=noise_dim,
+                size=batch_size * 10,
+                strike=strike,
+                N=n,
             )
             train_x.append(x.cpu())
             train_y.append(y.cpu())
         train_x = torch.cat(train_x, dim=0)
         train_y = torch.cat(train_y, dim=0)
     # run the MC simulation in batches
-    test_x, test_y = None, None
+    test_x, test_y = [], []
     for i in tqdm(range(0, size_test, batch_size)):
         x, y = generate_prices_MC(
             t, partition, noise_dim=noise_dim, size=batch_size, strike=strike, N=n, M=m
         )
-        if test_x is None:
-            test_x = x.cpu()
-            test_y = y.cpu()
-        else:
-            test_x = torch.cat((test_x, x.cpu()), dim=0)
-            test_y = torch.cat((test_y, y.cpu()), dim=0)
+        test_x.append(x.cpu())
+        test_y.append(y.cpu())
+    test_x = torch.cat(test_x, dim=0)
+    test_y = torch.cat(test_y, dim=0)
 
     # save the data to the data folder
     Path("data").mkdir(exist_ok=True)
