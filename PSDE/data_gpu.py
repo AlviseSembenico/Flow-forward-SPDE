@@ -169,9 +169,10 @@ def generate_prices_MC(
 @click.option("--noise_dim", type=int, default=7)
 @click.option("--size_train", type=int, default=100000)
 @click.option("--size_test", type=int, default=10000)
-@click.option("--partition_size", type=int, default=100)
+@click.option("--partition_size", type=int, default=365)
 @click.option("--strike", type=int, default=1)
-@click.option("--N", type=int, default=1)
+@click.option("--N", type=int, default=30)
+@click.option("--M", type=int, default=1000)
 def generate_full_dataset(
     t: float,
     noise_dim: int,
@@ -180,13 +181,14 @@ def generate_full_dataset(
     partition_size: int,
     strike: int,
     n: int,
+    m: int,
 ):
     partition = torch.linspace(0, t, partition_size)
     train_x, train_y = generate_prices(
         t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
     )
     test_x, test_y = generate_prices_MC(
-        t, partition, noise_dim=noise_dim, size=size_test, strike=strike, N=n
+        t, partition, noise_dim=noise_dim, size=size_test, strike=strike, N=n, M=m
     )
 
     # save the data to the data folder
