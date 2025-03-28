@@ -201,8 +201,8 @@ def generate_full_dataset(
             t, partition, noise_dim=noise_dim, size=batch_size, strike=strike, N=n, M=m
         )
         if test_x is None:
-            test_x = x
-            test_y = y
+            test_x = x.cpu()
+            test_y = y.cpu()
         else:
             test_x = torch.cat((test_x, x.cpu()), dim=0)
             test_y = torch.cat((test_y, y.cpu()), dim=0)
