@@ -189,13 +189,23 @@ def generate_full_dataset(
     test_only: bool,
 ):
     partition = torch.linspace(0, t, partition_size, device=device)
+    batch_size = min(batch_size, size_test)
+
+    train_x, train_y = None, None
     if not test_only:
-        train_x, train_y = generate_prices(
-            t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
-        )
+        for i in tqdm(range(0, size_train, 10 * batch_size)):
+            x, y = generate_prices(
+                t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
+            )
+            if train_x is None:
+                train_x = x.cpu()
+                train_y = y.cpu()
+            else:
+                train_x = torch.cat((train_x, x.cpu()), dim=0)
+                train_y = torch.cat((train_y, y.cpu()), dim=0)
+
     # run the MC simulation in batches
     test_x, test_y = None, None
-    batch_size = min(batch_size, size_test)
     for i in tqdm(range(0, size_test, batch_size)):
         x, y = generate_prices_MC(
             t, partition, noise_dim=noise_dim, size=batch_size, strike=strike, N=n, M=m
