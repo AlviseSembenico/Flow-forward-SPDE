@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from basis import span_torch
 from icecream import ic
+from tqdm import tqdm
 
 device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(42)
@@ -187,14 +188,25 @@ def generate_full_dataset(
     train_x, train_y = generate_prices(
         t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
     )
-    test_x, test_y = generate_prices_MC(
-        t, partition, noise_dim=noise_dim, size=size_test, strike=strike, N=n, M=m
-    )
+    # run the MC simulation in batches
+    test_x, test_y = None, None
+    batch_size = min(1000, size_test)
+    for i in tqdm(range(0, size_test, batch_size)):
+        x, y = generate_prices_MC(
+            t, partition, noise_dim=noise_dim, size=batch_size, strike=strike, N=n, M=m
+        )
+        if test_x is None:
+            test_x = x
+            test_y = y
+        else:
+            test_x = torch.cat((test_x, x.cpu()), dim=0)
+            test_y = torch.cat((test_y, y.cpu()), dim=0)
 
     # save the data to the data folder
     Path("data").mkdir(exist_ok=True)
     torch.save(train_x, "data/train_x.pt")
     torch.save(train_y, "data/train_y.pt")
+
     torch.save(test_x, "data/test_x.pt")
     torch.save(test_y, "data/test_y.pt")
 
