@@ -183,7 +183,7 @@ def generate_full_dataset(
     n: int,
     m: int,
 ):
-    partition = torch.linspace(0, t, partition_size)
+    partition = torch.linspace(0, t, partition_size, device=device)
     train_x, train_y = generate_prices(
         t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
     )
