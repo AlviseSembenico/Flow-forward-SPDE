@@ -67,7 +67,7 @@ def generate(
     xt += -(1 / 2) * lebesgue + ito
 
     yt = torch.exp(xt)
-    return yt
+    return x0, yt
 
 
 def generate_prices(
@@ -79,11 +79,11 @@ def generate_prices(
     strike: int = 1,
     N: int = 30,
 ):
-    yt = generate(t, partition, seed=seed, noise_dim=noise_dim, size=size, N=N)
+    x0, yt = generate(t, partition, seed=seed, noise_dim=noise_dim, size=size, N=N)
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
 
-    return yt, val
+    return x0, val
 
 
 def generate_MC(
@@ -145,7 +145,7 @@ def generate_MC(
 
     yt = torch.exp(xt)
     yt_mc = yt.mean(dim=2)
-    return yt_mc
+    return x0, yt_mc
 
 
 def generate_prices_MC(
@@ -158,11 +158,13 @@ def generate_prices_MC(
     M: int = 50,
     N: int = 30,
 ):
-    yt = generate_MC(t, partition, seed=seed, noise_dim=noise_dim, size=size, M=M, N=N)
+    x0, yt = generate_MC(
+        t, partition, seed=seed, noise_dim=noise_dim, size=size, M=M, N=N
+    )
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
 
-    return yt, val
+    return x0, val
 
 
 @click.command()
@@ -170,7 +172,7 @@ def generate_prices_MC(
 @click.option("--noise_dim", type=int, default=7)
 @click.option("--size_train", type=int, default=100000)
 @click.option("--size_test", type=int, default=10000)
-@click.option("--partition_size", type=int, default=365)
+@click.option("--partition_size", type=int, default=100)
 @click.option("--strike", type=int, default=1)
 @click.option("--N", type=int, default=30)
 @click.option("--M", type=int, default=1000)
@@ -203,7 +205,6 @@ def generate_full_dataset(
             else:
                 train_x = torch.cat((train_x, x.cpu()), dim=0)
                 train_y = torch.cat((train_y, y.cpu()), dim=0)
-
     # run the MC simulation in batches
     test_x, test_y = None, None
     for i in tqdm(range(0, size_test, batch_size)):
