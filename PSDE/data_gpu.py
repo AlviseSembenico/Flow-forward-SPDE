@@ -165,7 +165,7 @@ def generate_prices_MC(
     return x0, val
 
 
-# @click.command()
+@click.command()
 @click.option("--t", type=float, default=1 / 12)
 @click.option("--noise_dim", type=int, default=7)
 @click.option("--size_train", type=int, default=100000)
