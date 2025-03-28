@@ -175,6 +175,7 @@ def generate_prices_MC(
 @click.option("--N", type=int, default=30)
 @click.option("--M", type=int, default=1000)
 @click.option("--batch_size", type=int, default=1000)
+@click.option("--test_only", is_flag=True, default=False)
 def generate_full_dataset(
     t: float,
     noise_dim: int,
@@ -185,11 +186,13 @@ def generate_full_dataset(
     n: int,
     m: int,
     batch_size: int,
+    test_only: bool,
 ):
     partition = torch.linspace(0, t, partition_size, device=device)
-    train_x, train_y = generate_prices(
-        t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
-    )
+    if not test_only:
+        train_x, train_y = generate_prices(
+            t, partition, noise_dim=noise_dim, size=size_train, strike=strike, N=n
+        )
     # run the MC simulation in batches
     test_x, test_y = None, None
     batch_size = min(batch_size, size_test)
@@ -206,8 +209,9 @@ def generate_full_dataset(
 
     # save the data to the data folder
     Path("data").mkdir(exist_ok=True)
-    torch.save(train_x, "data/train_x.pt")
-    torch.save(train_y, "data/train_y.pt")
+    if not test_only:
+        torch.save(train_x, "data/train_x.pt")
+        torch.save(train_y, "data/train_y.pt")
 
     torch.save(test_x, "data/test_x.pt")
     torch.save(test_y, "data/test_y.pt")
