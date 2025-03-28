@@ -176,6 +176,7 @@ def generate_prices_MC(
 @click.option("--M", type=int, default=1000)
 @click.option("--batch_size", type=int, default=1000)
 @click.option("--test_only", is_flag=True, default=False)
+@click.option("--train_only", is_flag=True, default=False)
 def generate_full_dataset(
     t: float,
     noise_dim: int,
@@ -187,6 +188,7 @@ def generate_full_dataset(
     m: int,
     batch_size: int,
     test_only: bool,
+    train_only: bool,
 ):
     partition = torch.linspace(0, 1, partition_size, device=device)
     batch_size = min(batch_size, size_test)
@@ -208,14 +210,21 @@ def generate_full_dataset(
         train_y = torch.cat(train_y, dim=0)
     # run the MC simulation in batches
     test_x, test_y = [], []
-    for i in tqdm(range(0, size_test, batch_size)):
-        x, y = generate_prices_MC(
-            t, partition, noise_dim=noise_dim, size=batch_size, strike=strike, N=n, M=m
-        )
-        test_x.append(x.cpu())
-        test_y.append(y.cpu())
-    test_x = torch.cat(test_x, dim=0)
-    test_y = torch.cat(test_y, dim=0)
+    if not train_only:
+        for i in tqdm(range(0, size_test, batch_size)):
+            x, y = generate_prices_MC(
+                t,
+                partition,
+                noise_dim=noise_dim,
+                size=batch_size,
+                strike=strike,
+                N=n,
+                M=m,
+            )
+            test_x.append(x.cpu())
+            test_y.append(y.cpu())
+        test_x = torch.cat(test_x, dim=0)
+        test_y = torch.cat(test_y, dim=0)
 
     # save the data to the data folder
     Path("data").mkdir(exist_ok=True)
@@ -223,9 +232,10 @@ def generate_full_dataset(
         ic(train_x.shape, train_y.shape)
         torch.save(train_x, "data/train_x.pt")
         torch.save(train_y, "data/train_y.pt")
-    ic(test_x.shape, test_y.shape)
-    torch.save(test_x, "data/test_x.pt")
-    torch.save(test_y, "data/test_y.pt")
+    if not train_only:
+        ic(test_x.shape, test_y.shape)
+        torch.save(test_x, "data/test_x.pt")
+        torch.save(test_y, "data/test_y.pt")
 
 
 if __name__ == "__main__":
