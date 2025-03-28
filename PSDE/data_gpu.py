@@ -165,7 +165,7 @@ def generate_prices_MC(
     return x0, val
 
 
-@click.command()
+# @click.command()
 @click.option("--t", type=float, default=1 / 12)
 @click.option("--noise_dim", type=int, default=7)
 @click.option("--size_train", type=int, default=100000)
@@ -236,6 +236,13 @@ def generate_full_dataset(
         ic(test_x.shape, test_y.shape)
         torch.save(test_x, "data/test_x.pt")
         torch.save(test_y, "data/test_y.pt")
+    plt.hist(train_y, bins=100)
+    plt.savefig("data/train_y.png")
+    # plot the histogram of the test_y
+    plt.clf()
+    plt.hist(test_y, bins=100)
+    plt.savefig("data/test_y.png")
+    return train_x, train_y, test_x, test_y
 
 
 if __name__ == "__main__":
