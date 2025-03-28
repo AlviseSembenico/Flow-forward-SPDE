@@ -174,6 +174,7 @@ def generate_prices_MC(
 @click.option("--strike", type=int, default=1)
 @click.option("--N", type=int, default=30)
 @click.option("--M", type=int, default=1000)
+@click.option("--batch_size", type=int, default=1000)
 def generate_full_dataset(
     t: float,
     noise_dim: int,
@@ -183,6 +184,7 @@ def generate_full_dataset(
     strike: int,
     n: int,
     m: int,
+    batch_size: int,
 ):
     partition = torch.linspace(0, t, partition_size, device=device)
     train_x, train_y = generate_prices(
@@ -190,7 +192,7 @@ def generate_full_dataset(
     )
     # run the MC simulation in batches
     test_x, test_y = None, None
-    batch_size = min(1000, size_test)
+    batch_size = min(batch_size, size_test)
     for i in tqdm(range(0, size_test, batch_size)):
         x, y = generate_prices_MC(
             t, partition, noise_dim=noise_dim, size=batch_size, strike=strike, N=n, M=m
