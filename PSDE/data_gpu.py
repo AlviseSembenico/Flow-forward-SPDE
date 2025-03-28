@@ -190,7 +190,7 @@ def generate_full_dataset(
     batch_size: int,
     test_only: bool,
 ):
-    partition = torch.linspace(0, t, partition_size, device=device)
+    partition = torch.linspace(0, 1, partition_size, device=device)
     batch_size = min(batch_size, size_test)
 
     train_x, train_y = None, None
@@ -221,9 +221,10 @@ def generate_full_dataset(
     # save the data to the data folder
     Path("data").mkdir(exist_ok=True)
     if not test_only:
+        ic(train_x.shape, train_y.shape)
         torch.save(train_x, "data/train_x.pt")
         torch.save(train_y, "data/train_y.pt")
-
+    ic(test_x.shape, test_y.shape)
     torch.save(test_x, "data/test_x.pt")
     torch.save(test_y, "data/test_y.pt")
 
