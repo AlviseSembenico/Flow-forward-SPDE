@@ -25,7 +25,6 @@ def generate(
 ) -> torch.Tensor:
     X_size = partition.shape[0]
     assert noise_dim <= 7
-    torch.manual_seed(seed)
     # initial value
     if x0 is None:
         x0 = torch.empty(size, 7, device=device, dtype=torch.float64).uniform_(
@@ -99,7 +98,6 @@ def generate_MC(
 ):
     X_size = partition.shape[0]
     assert noise_dim <= 7
-    torch.manual_seed(seed)
 
     # initial value
     if x0 is None:
