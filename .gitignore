@@ -171,3 +171,4 @@ cython_debug/
 .pypirc
 .history/
 PSDE/data/
+PSDE/lightning_logs/
