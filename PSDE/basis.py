@@ -86,6 +86,21 @@ def e_7_torch(ξ: torch.Tensor) -> torch.Tensor:
     return (num / den) * torch.exp(-ξ)
 
 
+def e_8_torch(ξ: torch.Tensor) -> torch.Tensor:
+    num = ξ**6 - 30 * ξ**5 + 300 * ξ**4 - 1200 * ξ**3 + 1800 * ξ**2 - 720 * ξ
+    den = 720.0  # factorial(6)
+    return (num / den) * torch.exp(-ξ)
+
+def e_9_torch(ξ: torch.Tensor) -> torch.Tensor:
+    num = ξ**7 - 42 * ξ**6 + 630 * ξ**5 - 4200 * ξ**4 + 12600 * ξ**3 - 15120 * ξ**2 + 5040 * ξ
+    den = 5040.0  # factorial(7)
+    return (num / den) * torch.exp(-ξ)
+
+def e_10_torch(ξ: torch.Tensor) -> torch.Tensor:
+    num = ξ**8 - 56 * ξ**7 + 1176 * ξ**6 - 11760 * ξ**5 + 58800 * ξ**4 - 141120 * ξ**3 + 141120 * ξ**2 - 40320 * ξ
+    den = 40320.0  # factorial(8)
+    return (num / den) * torch.exp(-ξ)
+
 e_basis = [e_1, e_2, e_3, e_4, e_5, e_6, e_7]
 
 e_basis_torch = [
@@ -96,6 +111,9 @@ e_basis_torch = [
     e_5_torch,
     e_6_torch,
     e_7_torch,
+    e_8_torch,
+    e_9_torch,
+    e_10_torch,
 ]
 
 

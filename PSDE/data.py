@@ -131,6 +131,6 @@ def generate_prices_MC(
 if __name__ == "__main__":
     t = 1 / 12
     partition = np.linspace(0, 1, 100)
-    # yt = generate(t, partition)
-    yt = generate_MC(t, partition)
+    yt = generate(t, partition)
+    # yt = generate_MC(t, partition)
     ic(yt.shape)
