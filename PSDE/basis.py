@@ -120,3 +120,116 @@ def span(τ: np.ndarray) -> np.ndarray:
 
 def span_torch(τ: torch.Tensor) -> torch.Tensor:
     return torch.stack([e_basis_torch[i](τ) for i in range(7)])
+
+
+# Laguerre polynomials
+
+
+def e_0_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = 1.0
+    return num * torch.exp(-xi)
+
+
+def e_1_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = xi
+    return num * torch.exp(-xi)
+
+
+def e_2_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = xi * (2 - xi) / 2.0
+    return num * torch.exp(-xi)
+
+
+def e_3_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = xi * (xi**2 - 6 * xi + 6) / 6.0
+    return num * torch.exp(-xi)
+
+
+def e_4_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = xi * (-(xi**3) + 12 * xi**2 - 36 * xi + 24) / 24.0
+    return num * torch.exp(-xi)
+
+
+def e_5_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = xi * (xi**4 - 20 * xi**3 + 120 * xi**2 - 240 * xi + 120) / 120.0
+    return num * torch.exp(-xi)
+
+
+def e_6_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = (
+        xi
+        * (-(xi**5) + 30 * xi**4 - 300 * xi**3 + 1200 * xi**2 - 1800 * xi + 720)
+        / 720.0
+    )
+    return num * torch.exp(-xi)
+
+
+def e_7_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = (
+        xi
+        * (
+            xi**6
+            - 42 * xi**5
+            + 630 * xi**4
+            - 4200 * xi**3
+            + 12600 * xi**2
+            - 15120 * xi
+            + 5040
+        )
+        / 5040.0
+    )
+    return num * torch.exp(-xi)
+
+
+def e_8_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = (
+        xi
+        * (
+            -(xi**7)
+            + 56 * xi**6
+            - 1176 * xi**5
+            + 11760 * xi**4
+            - 58800 * xi**3
+            + 141120 * xi**2
+            - 141120 * xi
+            + 40320
+        )
+        / 40320.0
+    )
+    return num * torch.exp(-xi)
+
+
+def e_9_laguerre(xi: torch.Tensor) -> torch.Tensor:
+    num = (
+        xi
+        * (
+            xi**8
+            - 72 * xi**7
+            + 2016 * xi**6
+            - 28224 * xi**5
+            + 211680 * xi**4
+            - 846720 * xi**3
+            + 1693440 * xi**2
+            - 1451520 * xi
+            + 362880
+        )
+        / 362880.0
+    )
+    return num * torch.exp(-xi)
+
+
+def span_torch_laguerre(τ: torch.Tensor) -> torch.Tensor:
+    return torch.stack(
+        [
+            e_0_laguerre(τ),
+            e_1_laguerre(τ),
+            e_2_laguerre(τ),
+            e_3_laguerre(τ),
+            e_4_laguerre(τ),
+            e_5_laguerre(τ),
+            e_6_laguerre(τ),
+            e_7_laguerre(τ),
+            e_8_laguerre(τ),
+            e_9_laguerre(τ),
+        ]
+    )
