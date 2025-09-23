@@ -118,8 +118,8 @@ def span(τ: np.ndarray) -> np.ndarray:
     return np.array([e_basis[i](τ) for i in range(7)])
 
 
-def span_torch(τ: torch.Tensor) -> torch.Tensor:
-    return torch.stack([e_basis_torch[i](τ) for i in range(7)])
+def span_torch(τ: torch.Tensor, dim:int) -> torch.Tensor:
+    return torch.stack([e_basis_torch[i](τ) for i in range(dim)])
 
 
 # Laguerre polynomials
@@ -218,7 +218,7 @@ def e_9_laguerre(xi: torch.Tensor) -> torch.Tensor:
     return num * torch.exp(-xi)
 
 
-def span_torch_laguerre(τ: torch.Tensor) -> torch.Tensor:
+def span_torch_laguerre(τ: torch.Tensor, dim:int) -> torch.Tensor:
     return torch.stack(
         [
             e_0_laguerre(τ),
@@ -231,5 +231,5 @@ def span_torch_laguerre(τ: torch.Tensor) -> torch.Tensor:
             e_7_laguerre(τ),
             e_8_laguerre(τ),
             e_9_laguerre(τ),
-        ]
+        ][:dim]
     )

@@ -4,7 +4,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from basis import span_torch
+from basis import span_torch, span_torch_laguerre
 from icecream import ic
 from tqdm import tqdm
 
@@ -22,19 +22,23 @@ def generate(
     size: int = 1000,
     dW: torch.Tensor = None,
     N: int = 30,
+    laguerre:bool = False
 ) -> torch.Tensor:
     X_size = partition.shape[0]
-    assert noise_dim <= 7
+    assert noise_dim <= 10
     # initial value
     if x0 is None:
-        x0 = torch.empty(size, 7, device=device, dtype=torch.float64).uniform_(
+        x0 = torch.empty(size, noise_dim, device=device, dtype=torch.float64).uniform_(
             -1 / 2, 1 / 2
         )
     else:
         size = x0.shape[0]
 
     # Add the first value from x0
-    space = span_torch(partition + t)
+    if laguerre:
+        space = span_torch_laguerre(partition + t, noise_dim)
+    else:
+        space = span_torch(partition + t, noise_dim)
     xt = torch.matmul(x0, space)
 
     dt = t / N
@@ -53,7 +57,11 @@ def generate(
 
     for i in range(N):
         s = dt * i
-        p = span_torch(partition + (t - s))
+        if laguerre:
+            p = span_torch_laguerre(partition + (t-s), noise_dim)
+        else:
+            p = span_torch(partition + (t-s), noise_dim)
+            
 
         values = (p**2).sum(dim=0) * dt
         lebesgue += values
@@ -76,9 +84,10 @@ def generate_prices(
     noise_dim: int = 7,
     size: int = 1000,
     strike: int = 1,
-    N: int = 30,
+    N: int = 30,    
+    laguerre: bool = False
 ):
-    x0, yt = generate(t, partition, seed=seed, noise_dim=noise_dim, size=size, N=N)
+    x0, yt = generate(t, partition, seed=seed, noise_dim=noise_dim, size=size, N=N, laguerre=laguerre)
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
 
@@ -94,19 +103,23 @@ def generate_MC(
     size: int = 1000,
     dW: torch.Tensor = None,
     M: int = 50,
-    N: int = 30,
+    N: int = 30,    
+    laguerre: bool = False
 ):
     X_size = partition.shape[0]
-    assert noise_dim <= 7
+    assert noise_dim <= 10
 
     # initial value
     if x0 is None:
-        x0 = torch.empty(size, 7, device=device).uniform_(-1 / 2, 1 / 2)
+        x0 = torch.empty(size, noise_dim, device=device).uniform_(-1 / 2, 1 / 2)
     else:
         size = x0.shape[0]
 
     # Add the first value from x0
-    space = span_torch(partition + t)
+    if laguerre:
+        space = span_torch_laguerre(partition + t, noise_dim)
+    else:
+        space = span_torch(partition + t, noise_dim)
     xt = torch.matmul(x0, space)  # shape: (size, partition.shape[0])
 
     dt = t / N
@@ -127,7 +140,10 @@ def generate_MC(
 
     for i in range(N):
         s = dt * i
-        p = span_torch(partition + (t - s))
+        if laguerre:
+            p = span_torch_laguerre(partition + (t-s), noise_dim)
+        else:
+            p = span_torch(partition + (t-s), noise_dim)
 
         values = (p**2).sum(dim=0) * dt
         lebesgue += values
@@ -155,9 +171,10 @@ def generate_prices_MC(
     strike: int = 1,
     M: int = 50,
     N: int = 30,
+    laguerre:bool = False
 ):
     x0, yt = generate_MC(
-        t, partition, seed=seed, noise_dim=noise_dim, size=size, M=M, N=N
+        t, partition, seed=seed, noise_dim=noise_dim, size=size, M=M, N=N, laguerre=laguerre
     )
     val = yt.sum(dim=1) * (12 / 365)
     val = torch.maximum(val - strike, torch.zeros_like(val))
@@ -177,18 +194,20 @@ def generate_prices_MC(
 @click.option("--batch_size", type=int, default=1000)
 @click.option("--test_only", is_flag=True, default=False)
 @click.option("--train_only", is_flag=True, default=False)
+@click.option("--laguerre", is_flag=True, default=False)
 def generate_full_dataset(
     t: float,
     noise_dim: int,
     size_train: int,
     size_test: int,
     partition_size: int,
-    strike: int,
+    strike: int, 
     n: int,
     m: int,
     batch_size: int,
     test_only: bool,
     train_only: bool,
+    laguerre: bool,
 ):
     partition = torch.linspace(0, 1, partition_size, device=device)
     batch_size = min(batch_size, size_test)
@@ -203,6 +222,7 @@ def generate_full_dataset(
                 size=batch_size * 10,
                 strike=strike,
                 N=n,
+                laguerre=laguerre,
             )
             train_x.append(x.cpu())
             train_y.append(y.cpu())
@@ -220,6 +240,7 @@ def generate_full_dataset(
                 strike=strike,
                 N=n,
                 M=m,
+                laguerre=laguerre,
             )
             test_x.append(x.cpu())
             test_y.append(y.cpu())
