@@ -251,8 +251,8 @@ def generate_full_dataset(
     Path("data").mkdir(exist_ok=True)
     if not test_only:
         ic(train_x.shape, train_y.shape)
-        torch.save(train_x, "data/train_x.pt")
-        torch.save(train_y, "data/train_y.pt")
+        torch.save(train_x, f"data/train_x_{noise_dim}.pt")
+        torch.save(train_y,f"data/train_y_{noise_dim}.pt")
     if not train_only:
         ic(test_x.shape, test_y.shape)
         torch.save(test_x, "data/test_x.pt")
